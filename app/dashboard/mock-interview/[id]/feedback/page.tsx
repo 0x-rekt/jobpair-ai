@@ -176,7 +176,9 @@ const FeedbackPage = () => {
     );
   }
 
-  const feedbackDetails: FeedbackDetails = JSON.parse(interviewDetails.feedback);
+  const feedbackDetails: FeedbackDetails = JSON.parse(
+    interviewDetails.feedback,
+  );
   const feedbackScores: FeedbackScores = feedbackDetails;
   const overallScore = feedbackScores.Overall_Score;
 
