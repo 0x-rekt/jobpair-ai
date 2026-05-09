@@ -17,17 +17,17 @@ export async function POST(req: NextRequest) {
     create: { clerkId: userId, email: "" },
   });
 
-  //   const TOOL_NAME = "ROADMAP_GENERATOR";
-  //   const toolUsageCount = await prisma.userHistory.count({
-  //     where: {
-  //       userId,
-  //       tool: TOOL_NAME,
-  //     },
-  //   });
+  const TOOL_NAME = "ROADMAP_GENERATOR";
+  const toolUsageCount = await prisma.userHistory.count({
+    where: {
+      userId,
+      tool: TOOL_NAME,
+    },
+  });
 
-  //   if (!has({ plan: "premium" }) && toolUsageCount >= 5) {
-  //     return new Response("Upgrade required", { status: 403 });
-  //   }
+  if (!has({ plan: "premium" }) && toolUsageCount >= 5) {
+    return new Response("Upgrade required", { status: 403 });
+  }
 
   try {
     const generatedRoadmap = await generateRoadmap(userInput);

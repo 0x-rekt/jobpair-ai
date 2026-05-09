@@ -18,6 +18,7 @@ const NavBar = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const userNavigationItems = [
+    { href: "/", label: "Home", icon: Home },
     { href: "/#features", label: "Features", icon: BarChart3 },
     { href: "/dashboard", label: "Dashboard", icon: Home },
     { href: "/pricing", label: "Pricing", icon: CreditCard },
@@ -25,9 +26,12 @@ const NavBar = () => {
 
   return (
     <header className="border-b bg-white/95 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-      <div className="w-full max-w-7xl mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="flex items-center space-x-3 group">
+      <div className="w-full max-w-7xl mx-auto px-4 py-6">
+        <div className="flex items-center justify-center relative">
+          <Link
+            href="/"
+            className="flex items-center space-x-3 group absolute left-0"
+          >
             <div className="w-9 h-9 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
               <Brain className="w-5 h-5 text-white" />
             </div>
@@ -36,7 +40,7 @@ const NavBar = () => {
             </span>
           </Link>
 
-          <nav className="hidden lg:flex items-center space-x-8">
+          <nav className="hidden lg:flex items-center gap-6">
             <Show when="signed-in">
               {userNavigationItems.map((item) => (
                 <Link
@@ -51,7 +55,7 @@ const NavBar = () => {
             </Show>
           </nav>
 
-          <div className="hidden lg:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-4 absolute right-0">
             <Show when="signed-in">
               <UserButton
                 appearance={{
@@ -88,7 +92,7 @@ const NavBar = () => {
             </Show>
           </div>
 
-          <div className="lg:hidden">
+          <div className="lg:hidden absolute right-0">
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>
                 <Button

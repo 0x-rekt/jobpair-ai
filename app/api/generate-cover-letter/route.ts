@@ -8,7 +8,7 @@ import prisma from "@/lib/prisma";
 export async function POST(req: NextRequest) {
   const { userId, has } = await auth();
 
-  //   const TOOL_NAME = "COVER_LETTER_GENERATOR";
+  const TOOL_NAME = "COVER_LETTER_GENERATOR";
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -20,16 +20,16 @@ export async function POST(req: NextRequest) {
     create: { clerkId: userId, email: "" },
   });
 
-  //   const toolUsageCount = await prisma.userHistory.count({
-  //     where: {
-  //       userId,
-  //       tool: TOOL_NAME,
-  //     },
-  //   });
+  const toolUsageCount = await prisma.userHistory.count({
+    where: {
+      userId,
+      tool: TOOL_NAME,
+    },
+  });
 
-  //   if (!has({ plan: "premium" }) && toolUsageCount >= 5) {
-  //     return NextResponse.json({ error: "Upgrade required" }, { status: 403 });
-  //   }
+  if (!has({ plan: "premium" }) && toolUsageCount >= 5) {
+    return NextResponse.json({ error: "Upgrade required" }, { status: 403 });
+  }
 
   try {
     const formData = await req.formData();
