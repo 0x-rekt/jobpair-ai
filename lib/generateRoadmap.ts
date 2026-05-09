@@ -51,8 +51,37 @@ initialEdges : [
   });
 
   const candidateText = res?.candidates?.[0]?.content?.parts?.[0]?.text;
-  const rawJson = candidateText?.replace("```json", "").replace("```", "");
-  const parsedJson = JSON.parse(rawJson!);
 
-  return parsedJson;
+  if (!candidateText) {
+    throw new Error("No response from AI model");
+  }
+
+  // Extract JSON from the response
+  let rawJson = candidateText;
+
+  // Remove markdown code blocks if present
+  rawJson = rawJson
+    .replace(/```json\n?/g, "")
+    .replace(/```\n?/g, "")
+    .trim();
+
+  // Try to find JSON object in the text
+  const jsonMatch = rawJson.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    rawJson = jsonMatch[0];
+  }
+
+  try {
+    const parsedJson = JSON.parse(rawJson);
+    return parsedJson;
+  } catch (parseError) {
+    console.error("Failed to parse roadmap JSON:", {
+      error: parseError,
+      candidateText: candidateText.substring(0, 200),
+      rawJson: rawJson.substring(0, 200),
+    });
+    throw new Error(
+      `Invalid JSON response from AI model. Received: ${candidateText.substring(0, 100)}`,
+    );
+  }
 };
