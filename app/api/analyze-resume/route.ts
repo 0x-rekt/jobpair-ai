@@ -65,6 +65,8 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     console.error("[ANALYZE_ERROR]", error);
-    return new Response("Something went wrong", { status: 500 });
+    const message =
+      error instanceof Error ? error.message : "Internal Server Error";
+    return new Response(JSON.stringify({ error: message }), { status: 500 });
   }
 }
