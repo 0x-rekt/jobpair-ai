@@ -6,7 +6,7 @@ const ai = new GoogleGenAI({
 
 export const generateCoverLetter = async (text: string) => {
   const res = await ai.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-3-flash-preview",
     config: {
       systemInstruction: `
         You are an advanced AI Cover Letter Generator.

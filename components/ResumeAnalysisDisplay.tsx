@@ -147,7 +147,7 @@ export default function ResumeAnalysisDisplay({
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              {data.whats_good.map((item, index) => (
+              {(data.whats_good || []).map((item, index) => (
                 <li key={index} className="flex items-start gap-2 text-sm">
                   <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                   <span className="text-green-800">{item}</span>
@@ -166,7 +166,7 @@ export default function ResumeAnalysisDisplay({
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              {data.needs_improvement.map((item, index) => (
+              {(data.needs_improvement || []).map((item, index) => (
                 <li key={index} className="flex items-start gap-2 text-sm">
                   <AlertCircle className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
                   <span className="text-orange-800">{item}</span>
@@ -185,7 +185,7 @@ export default function ResumeAnalysisDisplay({
           </CardHeader>
           <CardContent>
             <ul className="space-y-2">
-              {data.tips_for_improvement.map((item, index) => (
+              {(data.tips_for_improvement || []).map((item, index) => (
                 <li key={index} className="flex items-start gap-2 text-sm">
                   <Lightbulb className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                   <span className="text-blue-800">{item}</span>
@@ -235,7 +235,7 @@ export default function ResumeAnalysisDisplay({
                           Strengths
                         </h4>
                         <ul className="space-y-1">
-                          {sectionData.whats_good.map((item, index) => (
+                          {(sectionData.whats_good || []).map((item, index) => (
                             <li
                               key={index}
                               className="text-sm text-green-800 bg-green-50 p-2 rounded"
@@ -252,14 +252,16 @@ export default function ResumeAnalysisDisplay({
                           Areas to Improve
                         </h4>
                         <ul className="space-y-1">
-                          {sectionData.needs_improvement.map((item, index) => (
-                            <li
-                              key={index}
-                              className="text-sm text-orange-800 bg-orange-50 p-2 rounded"
-                            >
-                              {item}
-                            </li>
-                          ))}
+                          {(sectionData.needs_improvement || []).map(
+                            (item, index) => (
+                              <li
+                                key={index}
+                                className="text-sm text-orange-800 bg-orange-50 p-2 rounded"
+                              >
+                                {item}
+                              </li>
+                            ),
+                          )}
                         </ul>
                       </div>
 
@@ -269,7 +271,7 @@ export default function ResumeAnalysisDisplay({
                           Improvement Tips
                         </h4>
                         <ul className="space-y-1">
-                          {sectionData.tips_for_improvement.map(
+                          {(sectionData.tips_for_improvement || []).map(
                             (item, index) => (
                               <li
                                 key={index}
