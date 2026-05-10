@@ -42,7 +42,7 @@ The platform records every tool interaction in the user's personal history, enab
 
 ## 🔗 Live Demo
 
-> **[https://jobpair-ai.vercel.app](https://jobpair-ai.vercel.app)**
+> **[https://jobpair-ai-beta.vercel.app](https://jobpair-ai-beta.vercel.app)**
 
 ---
 
@@ -89,7 +89,7 @@ The platform records every tool interaction in the user's personal history, enab
 | **Language** | TypeScript 5 |
 | **Styling** | Tailwind CSS v4 |
 | **UI Components** | shadcn/ui + Radix UI + Lucide React |
-| **AI / LLM** | Google Gemini (`gemini-3-flash-preview`, `gemini-2.0-flash`) via `@google/genai` |
+| **AI / LLM** | Google Gemini (`gemini-3-flash-preview`, `gemini-2.5-flash`) via `@google/genai` |
 | **Voice AI** | Vapi AI (`@vapi-ai/web`) + ElevenLabs TTS |
 | **Auth** | Clerk (`@clerk/nextjs`) |
 | **Database** | PostgreSQL (via `pg` adapter) |
