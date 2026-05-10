@@ -1,9 +1,10 @@
-import { analyze } from "@/lib/analyze";
-import imagekit from "@/lib/config";
-import { WebPDFLoader } from "@langchain/community/document_loaders/web/pdf";
 import { NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
+
+const FASTAPI_URL =
+  process.env.FASTAPI_URL ?? "http://localhost:8000";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,7 +13,6 @@ export async function POST(req: NextRequest) {
       return new Response("Unauthorized", { status: 401 });
     }
 
-    // Ensure user exists in database
     await prisma.user.upsert({
       where: { clerkId: userId },
       update: {},
@@ -38,18 +38,27 @@ export async function POST(req: NextRequest) {
       return new Response("Resume file missing", { status: 400 });
     }
 
-    const loader = new WebPDFLoader(resume);
-    const docs = await loader.load();
+    const proxyForm = new FormData();
+    proxyForm.append("resume", resume, resume.name);
 
-    const arrayBuffer = await resume.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString("base64");
-
-    const uploadResult = await imagekit.upload({
-      file: base64,
-      fileName: resume.name,
+    const fastapiRes = await fetch(`${FASTAPI_URL}/analyze-resume`, {
+      method: "POST",
+      body: proxyForm,
     });
 
-    const analysis = await analyze(docs[0].pageContent);
+    if (!fastapiRes.ok) {
+      const errText = await fastapiRes.text();
+      console.error("[FASTAPI_ERROR]", fastapiRes.status, errText);
+      return new Response(
+        JSON.stringify({ error: errText || "Failed to analyze resume" }),
+        { status: fastapiRes.status }
+      );
+    }
+
+    const { analysis, url } = (await fastapiRes.json()) as {
+      analysis: Prisma.InputJsonValue;
+      url: string | null;
+    };
 
     await prisma.userHistory.create({
       data: {
@@ -60,7 +69,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return new Response(JSON.stringify({ analysis, url: uploadResult.url }), {
+    return new Response(JSON.stringify({ analysis, url }), {
       status: 200,
     });
   } catch (error) {
