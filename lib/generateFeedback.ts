@@ -1,8 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
+import { generateContent } from "@/lib/gemini";
 
 type TranscriptMessage = {
   role?: string;
@@ -35,8 +31,7 @@ export const generateInterviewFeedback = async (
 ) => {
   const transcript = formatTranscript(answers);
 
-  const res = await ai.models.generateContent({
-    model: "gemini-3.8-flash",
+  const res = await generateContent({
     config: {
       responseMimeType: "application/json",
       responseJsonSchema: {

@@ -1,12 +1,7 @@
-import { GoogleGenAI } from "@google/genai";
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
+import { generateContent } from "@/lib/gemini";
 
 export const analyze = async (text: string) => {
-  const res = await ai.models.generateContent({
-    model: "gemini-3.8-flash",
+  const res = await generateContent({
     config: {
       systemInstruction: `You are an advanced AI Resume Analyzer Agent.
 

@@ -31,7 +31,10 @@ export async function GET() {
   } catch (error) {
     console.error("[HISTORY_GET_ERROR]", error);
     return NextResponse.json(
-      { error: "Failed to fetch history", details: error },
+      {
+        error: "Failed to fetch history",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
       { status: 500 },
     );
   }

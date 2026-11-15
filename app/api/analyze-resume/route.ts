@@ -2,9 +2,7 @@ import { NextRequest } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
-
-const FASTAPI_URL =
-  process.env.FASTAPI_URL ?? "http://localhost:8000";
+import { fetchFastApi } from "@/lib/fastapi";
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,7 +39,7 @@ export async function POST(req: NextRequest) {
     const proxyForm = new FormData();
     proxyForm.append("resume", resume, resume.name);
 
-    const fastapiRes = await fetch(`${FASTAPI_URL}/analyze-resume`, {
+    const fastapiRes = await fetchFastApi("analyze-resume", {
       method: "POST",
       body: proxyForm,
     });

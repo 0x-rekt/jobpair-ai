@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
-
-const FASTAPI_URL = process.env.FASTAPI_URL ?? "http://localhost:8000";
+import { fetchFastApi } from "@/lib/fastapi";
 
 export async function POST(req: NextRequest) {
   const { userId, has } = await auth();
@@ -56,7 +55,7 @@ export async function POST(req: NextRequest) {
     proxyForm.append("tone", tone);
     proxyForm.append("length", length);
 
-    const fastapiRes = await fetch(`${FASTAPI_URL}/generate-cover-letter`, {
+    const fastapiRes = await fetchFastApi("generate-cover-letter", {
       method: "POST",
       body: proxyForm,
     });

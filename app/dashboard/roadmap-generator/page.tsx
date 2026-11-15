@@ -23,6 +23,7 @@ export default function RoadmapGenerator() {
   const [userInput, setUserInput] = useState("");
   const [roadmap, setRoadmap] = useState<RoadmapData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const router = useRouter();
   const { user } = useUser();
 
@@ -49,6 +50,7 @@ export default function RoadmapGenerator() {
     if (!userInput.trim()) return;
 
     setLoading(true);
+    setErrorMessage("");
     try {
       const res = await fetch("/api/generate-roadmap", {
         method: "POST",
@@ -58,16 +60,26 @@ export default function RoadmapGenerator() {
         body: JSON.stringify({ userInput }),
       });
 
-      if (!res.ok && res.status === 403) {
-        router.push("/pricing");
+      if (!res.ok) {
+        if (res.status === 403) {
+          router.push("/pricing");
+          return;
+        }
+        const data = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        setErrorMessage(data?.error ?? "Failed to generate roadmap.");
+        return;
       }
 
       const data = await res.json();
       setRoadmap(data);
     } catch (error) {
       console.error("Error generating roadmap:", error);
+      setErrorMessage("Failed to generate roadmap. Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleReset = () => {
@@ -104,6 +116,11 @@ export default function RoadmapGenerator() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {errorMessage && (
+                    <p className="text-sm text-red-600" role="alert">
+                      {errorMessage}
+                    </p>
+                  )}
                   <div>
                     <Textarea
                       placeholder="e.g., I want to become a full-stack developer, learn data science, master digital marketing, etc."

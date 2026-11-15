@@ -1,12 +1,7 @@
-import { GoogleGenAI } from "@google/genai";
-
-const ai = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY,
-});
+import { generateContent } from "@/lib/gemini";
 
 export const generateRoadmap = async (text: string) => {
-  const res = await ai.models.generateContent({
-    model: "gemini-3.8-flash",
+  const res = await generateContent({
     config: {
       systemInstruction: `Generate a React flow tree-structured learning roadmap for user input position/ skills the following format:
  vertical tree structure with meaningful x/y positions to form a flow

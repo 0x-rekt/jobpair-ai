@@ -2,6 +2,7 @@ import { generateRoadmap } from "@/lib/generateRoadmap";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
+import { ApiError } from "@google/genai";
 
 export async function POST(req: NextRequest) {
   const { userInput } = await req.json();
@@ -42,7 +43,16 @@ export async function POST(req: NextRequest) {
     });
     return new NextResponse(JSON.stringify(generatedRoadmap), { status: 200 });
   } catch (error) {
-    console.log(error);
-    return new NextResponse(JSON.stringify(error), { status: 500 });
+    console.error("[ROADMAP_ERROR]", error);
+    if (error instanceof ApiError && error.status === 503) {
+      return NextResponse.json(
+        { error: "The AI service is temporarily busy. Please try again." },
+        { status: 503 },
+      );
+    }
+    return NextResponse.json(
+      { error: "Failed to generate roadmap" },
+      { status: 500 },
+    );
   }
 }
