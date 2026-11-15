@@ -11,7 +11,7 @@ export const generateQuestions = async (
   type: string,
 ) => {
   const res = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-3.8-flash",
     config: {
       systemInstruction: `You are an expert in job interviews. Generate interview questions for the given position.
 

@@ -1,9 +1,9 @@
-import { generateCoverLetter } from "@/lib/generateCoverLetter";
-import imagekit from "@/lib/config";
-import { WebPDFLoader } from "@langchain/community/document_loaders/web/pdf";
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import prisma from "@/lib/prisma";
+import { Prisma } from "@/generated/prisma/client";
+
+const FASTAPI_URL = process.env.FASTAPI_URL ?? "http://localhost:8000";
 
 export async function POST(req: NextRequest) {
   const { userId, has } = await auth();
@@ -42,38 +42,43 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const loader = new WebPDFLoader(resume);
-    const docs = await loader.load();
-    const resumeText = docs[0].pageContent;
+    const jobTitle = (formData.get("jobTitle") as string) ?? "";
+    const companyName = (formData.get("companyName") as string) ?? "";
+    const jobDescription = (formData.get("jobDescription") as string) ?? "";
+    const tone = (formData.get("tone") as string) ?? "";
+    const length = (formData.get("length") as string) ?? "";
 
-    const arrayBuffer = await resume.arrayBuffer();
-    const base64 = Buffer.from(arrayBuffer).toString("base64");
+    const proxyForm = new FormData();
+    proxyForm.append("resume", resume, resume.name);
+    proxyForm.append("jobTitle", jobTitle);
+    proxyForm.append("companyName", companyName);
+    proxyForm.append("jobDescription", jobDescription);
+    proxyForm.append("tone", tone);
+    proxyForm.append("length", length);
 
-    const result = await imagekit.upload({
-      file: base64,
-      fileName: resume.name,
+    const fastapiRes = await fetch(`${FASTAPI_URL}/generate-cover-letter`, {
+      method: "POST",
+      body: proxyForm,
     });
 
-    const jobTitle = formData.get("jobTitle") as string;
-    const companyName = formData.get("companyName") as string;
-    const jobDescription = formData.get("jobDescription") as string;
-    const tone = formData.get("tone") as string;
-    const length = formData.get("length") as string;
+    if (!fastapiRes.ok) {
+      const errText = await fastapiRes.text();
+      console.error("[FASTAPI_ERROR]", fastapiRes.status, errText);
+      return NextResponse.json(
+        { error: errText || "Failed to generate cover letter" },
+        { status: fastapiRes.status },
+      );
+    }
 
-    const llmInput = JSON.stringify({
-      resumeText,
-      jobTitle,
-      companyName,
-      jobDescription,
-      tone,
-      length,
-    });
-
-    const coverLetter = await generateCoverLetter(llmInput);
+    const { cover_letter: coverLetter, pdf_url: pdfUrl } =
+      (await fastapiRes.json()) as {
+        cover_letter: Prisma.InputJsonValue;
+        pdf_url: string | null;
+      };
 
     await prisma.userHistory.create({
       data: {
-        userId: userId!,
+        userId,
         tool: "COVER_LETTER_GENERATOR",
         input: {
           jobTitle,
@@ -84,16 +89,14 @@ export async function POST(req: NextRequest) {
         },
         output: {
           coverLetter,
-          pdfUrl: result.url,
+          pdfUrl,
         },
       },
     });
 
-    return NextResponse.json(
-      { coverLetter, pdfUrl: result.url },
-      { status: 200 },
-    );
+    return NextResponse.json({ coverLetter, pdfUrl }, { status: 200 });
   } catch (error) {
+    console.error("[COVER_LETTER_ERROR]", error);
     return NextResponse.json(
       {
         error: "Failed to generate cover letter",

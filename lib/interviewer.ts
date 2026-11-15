@@ -5,7 +5,7 @@ export const interviewer: CreateAssistantDTO = {
   firstMessage: `Hello {{username}}! `,
   transcriber: {
     provider: "google",
-    model: "gemini-2.5-flash",
+    model: "gemini-3.8-flash",
     language: "English",
   },
   voice: {
@@ -19,7 +19,7 @@ export const interviewer: CreateAssistantDTO = {
   },
   model: {
     provider: "google",
-    model: "gemini-2.5-flash",
+    model: "gemini-3.8-flash",
     messages: [
       {
         role: "system",

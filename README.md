@@ -89,7 +89,7 @@ The platform records every tool interaction in the user's personal history, enab
 | **Language** | TypeScript 5 |
 | **Styling** | Tailwind CSS v4 |
 | **UI Components** | shadcn/ui + Radix UI + Lucide React |
-| **AI / LLM** | Google Gemini (`gemini-3-flash-preview`, `gemini-2.5-flash`) via `@google/genai` |
+| **AI / LLM** | Google Gemini (`gemini-3.8-flash`) via `@google/genai` |
 | **Voice AI** | Vapi AI (`@vapi-ai/web`) + ElevenLabs TTS |
 | **Auth** | Clerk (`@clerk/nextjs`) |
 | **Database** | PostgreSQL (via `pg` adapter) |
@@ -225,7 +225,7 @@ jobpair-ai/
 ├── app/
 │   ├── api/
 │   │   ├── analyze-resume/       # Proxies PDF to FastAPI, runs Gemini analysis
-│   │   ├── generate-cover-letter/
+│   │   ├── generate-cover-letter/ # Proxies PDF to FastAPI, generates cover letter
 │   │   ├── generate-questions/   # Generates interview Q&A with Gemini
 │   │   ├── generate-roadmap/
 │   │   ├── generate-feedback/    # Post-interview scoring
@@ -253,7 +253,6 @@ jobpair-ai/
 │
 ├── lib/
 │   ├── analyze.ts                # Gemini resume analysis prompt
-│   ├── generateCoverLetter.ts    # Gemini cover letter prompt
 │   ├── generateRoadmap.ts        # Gemini roadmap prompt
 │   ├── generateQuestions.ts      # Gemini interview question prompt
 │   ├── generateFeedback.ts       # Gemini post-interview feedback prompt
@@ -277,7 +276,7 @@ All routes are under `/api/` and are protected by Clerk authentication.
 | Method | Endpoint | Description |
 |---|---|---|
 | `POST` | `/api/analyze-resume` | Upload PDF, parse text via FastAPI, analyze with Gemini, store history |
-| `POST` | `/api/generate-cover-letter` | Generate cover letter from resume text + job details |
+| `POST` | `/api/generate-cover-letter` | Upload PDF, parse text via FastAPI, generate cover letter with Gemini, store history |
 | `POST` | `/api/generate-roadmap` | Generate career roadmap nodes for a given role |
 | `POST` | `/api/generate-questions` | Generate interview questions for role/level/type |
 | `POST` | `/api/generate-feedback` | Score completed interview session |

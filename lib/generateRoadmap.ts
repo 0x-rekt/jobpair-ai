@@ -6,7 +6,7 @@ const ai = new GoogleGenAI({
 
 export const generateRoadmap = async (text: string) => {
   const res = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-3.8-flash",
     config: {
       systemInstruction: `Generate a React flow tree-structured learning roadmap for user input position/ skills the following format:
  vertical tree structure with meaningful x/y positions to form a flow

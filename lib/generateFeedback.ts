@@ -36,7 +36,7 @@ export const generateInterviewFeedback = async (
   const transcript = formatTranscript(answers);
 
   const res = await ai.models.generateContent({
-    model: "gemini-3-flash-preview",
+    model: "gemini-3.8-flash",
     config: {
       responseMimeType: "application/json",
       responseJsonSchema: {
