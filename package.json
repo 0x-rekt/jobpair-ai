@@ -2,6 +2,9 @@
   "name": "jobpair-ai",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22.14.0"
+  },
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build --webpack && bun --bun prisma generate",
@@ -18,7 +21,7 @@
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@types/pdf-parse": "^1.1.5",
-    "@vapi-ai/web": "^2.5.2",
+    "@vapi-ai/web": "^3.1.1",
     "@xyflow/react": "^12.10.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
