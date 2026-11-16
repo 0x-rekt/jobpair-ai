@@ -24,8 +24,13 @@ import {
   CheckCircle,
 } from "lucide-react";
 
-import { vapi } from "@/lib/vapi";
-import { interviewer } from "@/lib/interviewer";
+import {
+  Participant,
+  Room,
+  RoomEvent,
+  Track,
+  type TranscriptionSegment,
+} from "livekit-client";
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -52,13 +57,6 @@ interface InterviewDetails {
   createdAt: string;
 }
 
-type Message = {
-  type: "transcript" | string;
-  transcriptType?: "final" | "interim";
-  role: "user" | "assistant" | "system";
-  transcript: string;
-};
-
 const MockInterviewPage = () => {
   const { id } = useParams();
   const router = useRouter();
@@ -73,6 +71,7 @@ const MockInterviewPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [callDuration, setCallDuration] = useState(0);
   const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
+  const [room] = useState(() => new Room());
 
   const getInterviewDetails = async () => {
     setLoading(true);
@@ -111,54 +110,76 @@ const MockInterviewPage = () => {
   };
 
   useEffect(() => {
-    const onCallStart = () => {
+    const onConnected = () => {
       setCallStatus(CallStatus.ACTIVE);
       setCallDuration(0);
     };
 
-    const onCallEnd = () => {
+    const onDisconnected = () => {
       setCallStatus(CallStatus.FINISHED);
       setIsSpeaking(false);
     };
 
-    const onMessage = (message: Message) => {
-      if (message.type === "transcript" && message.transcriptType === "final") {
+    const onTranscription = (
+      segments: TranscriptionSegment[],
+      participant?: Participant,
+    ) => {
+      for (const segment of segments) {
+        if (!segment.final || !segment.text.trim()) continue;
         setMessages((prev) => [
           ...prev,
           {
-            role: message.role,
-            content: message.transcript,
+            role:
+              participant?.identity === room.localParticipant.identity
+                ? "user"
+                : "assistant",
+            content: segment.text,
             timestamp: new Date(),
           },
         ]);
       }
     };
 
-    const onSpeechStart = () => setIsSpeaking(true);
-    const onSpeechEnd = () => setIsSpeaking(false);
-
-    const onError = (err: Error) => {
-      console.error("VAPI Error:", err);
-      setCallStatus(CallStatus.ERROR);
-      setError("Call failed. Please try again.");
+    const onActiveSpeakersChanged = (speakers: Participant[]) => {
+      setIsSpeaking(
+        speakers.some(
+          (speaker) => speaker.identity !== room.localParticipant.identity,
+        ),
+      );
     };
 
-    vapi.on("call-start", onCallStart);
-    vapi.on("call-end", onCallEnd);
-    vapi.on("message", onMessage);
-    vapi.on("speech-start", onSpeechStart);
-    vapi.on("speech-end", onSpeechEnd);
-    vapi.on("error", onError);
+    const onRoomError = (err: Error) => {
+      console.error("LiveKit error:", err);
+      setCallStatus(CallStatus.ERROR);
+      setError("Voice connection failed. Please try again.");
+    };
+
+    const onTrackSubscribed = (
+      track: Track,
+      _publication: unknown,
+      _participant: Participant,
+    ) => {
+      if (track.kind === Track.Kind.Audio) {
+        track.attach();
+      }
+    };
+
+    room.on(RoomEvent.Connected, onConnected);
+    room.on(RoomEvent.Disconnected, onDisconnected);
+    room.on(RoomEvent.TranscriptionReceived, onTranscription);
+    room.on(RoomEvent.ActiveSpeakersChanged, onActiveSpeakersChanged);
+    room.on(RoomEvent.TrackSubscribed, onTrackSubscribed);
+    room.on(RoomEvent.MediaDevicesError, onRoomError);
 
     return () => {
-      vapi.off("call-start", onCallStart);
-      vapi.off("call-end", onCallEnd);
-      vapi.off("message", onMessage);
-      vapi.off("speech-start", onSpeechStart);
-      vapi.off("speech-end", onSpeechEnd);
-      vapi.off("error", onError);
+      room.off(RoomEvent.Connected, onConnected);
+      room.off(RoomEvent.Disconnected, onDisconnected);
+      room.off(RoomEvent.TranscriptionReceived, onTranscription);
+      room.off(RoomEvent.ActiveSpeakersChanged, onActiveSpeakersChanged);
+      room.off(RoomEvent.TrackSubscribed, onTrackSubscribed);
+      room.off(RoomEvent.MediaDevicesError, onRoomError);
     };
-  }, []);
+  }, [room]);
 
   useEffect(() => {
     if (
@@ -198,11 +219,6 @@ const MockInterviewPage = () => {
   };
 
   const handleCall = async () => {
-    if (!process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY) {
-      setError("VAPI is not configured properly");
-      return;
-    }
-
     setCallStatus(CallStatus.CONNECTING);
     setError(null);
 
@@ -211,23 +227,45 @@ const MockInterviewPage = () => {
       .join("\n");
 
     try {
-      await vapi.start(interviewer, {
-        variableValues: {
-          username: user?.firstName,
+      const roomName = `interview-${interviewDetails?.id}-${crypto.randomUUID()}`;
+      const tokenResponse = await fetch("/api/livekit/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          roomName,
+          username: user?.firstName ?? "Candidate",
           questions: formattedQuestions,
-        },
+        }),
       });
+      const tokenData = await tokenResponse.json();
+      if (!tokenResponse.ok) {
+        throw new Error(tokenData.error ?? "Failed to create voice session");
+      }
+
+      await room.connect(tokenData.serverUrl, tokenData.participantToken);
+      await room.localParticipant.setMicrophoneEnabled(true);
     } catch (error) {
-      console.error("Failed to start VAPI call:", error);
+      console.error("Failed to start LiveKit call:", error);
       setCallStatus(CallStatus.ERROR);
-      setError("Failed to start the call. Please try again.");
+      setError(
+        error instanceof Error
+          ? error.message
+          : "Failed to start the call. Please try again.",
+      );
     }
   };
 
   const handleDisconnect = () => {
-    vapi.stop();
+    room.disconnect();
     setCallStatus(CallStatus.FINISHED);
   };
+
+  useEffect(
+    () => () => {
+      void room.disconnect();
+    },
+    [room],
+  );
 
   useEffect(() => {
     if (id) {

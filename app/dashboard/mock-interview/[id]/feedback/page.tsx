@@ -15,7 +15,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Trophy,
@@ -28,7 +27,6 @@ import {
   Shuffle,
   Calendar,
   Briefcase,
-  FileText,
   ArrowLeft,
   Loader2,
   AlertCircle,
@@ -59,7 +57,6 @@ interface InterviewDetails {
   jobDescription: string;
   jobRole: string;
   level: string;
-  questions: string[];
   type: string;
   userId: string;
 }
@@ -295,35 +292,6 @@ const FeedbackPage = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                Interview Questions
-              </CardTitle>
-              <CardDescription>
-                Questions covered during your interview session
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-64">
-                <div className="space-y-3">
-                  {interviewDetails.questions.map((question, index) => (
-                    <div
-                      key={index}
-                      className="flex gap-3 p-3 rounded-lg border bg-muted/50"
-                    >
-                      <div className="shrink-0 w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center font-medium">
-                        {index + 1}
-                      </div>
-                      <p className="text-sm leading-relaxed">{question}</p>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5" />
                 Qualitative Feedback
               </CardTitle>
@@ -424,15 +392,6 @@ const FeedbackPage = () => {
                 <Badge variant="outline" className="capitalize">
                   {interviewDetails.type}
                 </Badge>
-              </div>
-              <Separator />
-              <div>
-                <p className="text-sm font-medium text-muted-foreground">
-                  Questions Asked
-                </p>
-                <p className="font-medium">
-                  {interviewDetails.questions.length} questions
-                </p>
               </div>
               <Separator />
               <div>

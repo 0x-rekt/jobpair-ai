@@ -1,0 +1,17 @@
+{
+  "name": "jobpair-ai-livekit-agent",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "tsx agent.ts start",
+    "dev": "tsx agent.ts dev"
+  },
+  "dependencies": {
+    "@livekit/agents": "^1.10.0",
+    "dotenv": "^17.4.2",
+    "tsx": "^4.21.0"
+  }
+}
